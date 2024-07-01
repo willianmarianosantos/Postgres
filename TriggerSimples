@@ -1,0 +1,33 @@
+CREATE TABLE Pessoa (
+    nome varchar(100) NOT NULL,
+    idade int,
+    endereco varchar(100) NOT NULL  
+);
+
+select * from pessoa
+
+CREATE TRIGGER tgapaga  /* Nome da TRIGGER */
+	AFTER UPDATE ON Pessoa  /* Condição */ 
+	FOR EACH ROW  /*  trigger deve ser executada para cada linha afetada pela operação de atualização. */ 
+	EXECUTE FUNCTION ApagaTabela(); /* Executa a função chamada pela trigger*/
+
+
+DROP FUNCTION IF EXISTS ApagaTabela() CASCADE;
+CREATE OR REPLACE FUNCTION ApagaTabela() RETURNS TRIGGER AS $$
+BEGIN
+    DELETE FROM Pessoa WHERE nome = NEW.nome;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+
+INSERT INTO Pessoa (nome, idade, endereco) VALUES
+    ('willian Mariano', 29, 'Rua A'),
+    ('Maria Mariana', 27, 'Avenida B'),
+    ('Pedro Oliveira', 40, 'Rua C');
+
+select * from pessoa
+
+	
+UPDATE Pessoa SET idade = 34 WHERE nome = 'Maria Santos';
+SELECT * FROM Pessoa;
