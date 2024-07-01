@@ -1,0 +1,636 @@
+/*
+
+Comandos basicos:
+
+CREATE DATABASE ***
+
+SELECT * FROM ***
+
+INSERT INTO *** (***) VALUES ('***');
+
+UPDATE *** SET *** = 'tarara' WHERE ID = *
+
+DELETE FROM *** where id =*
+
+ALTER TABLE *** RENAME COLUMN **** TO ****
+
+
+where vc pode usar no select update e delete
+*/
+
+
+create database Locadora_filmes;
+
+
+
+CREATE TABLE ENDERECO
+(
+    COD_END     serial PRIMARY KEY,
+    LOGRADOURO  VARCHAR(40),
+    TIPO_LOG    VARCHAR(40),
+    COMPLEMENTO VARCHAR(20),
+    CIDADE      VARCHAR(60),
+    UF          varchar(2),
+    CEP         varchar(8),
+    NUMERO      varchar(5),
+    BAIRRO      varchar(60)
+
+);
+
+
+
+CREATE TABLE PROFISSAO
+(
+    COD_PROF SERIAL PRIMARY KEY,
+    NAME     varchar(60)
+);
+
+
+
+CREATE TABLE CLIENTE
+(
+    COD_CLI    SERIAL PRIMARY KEY,
+    CPF        varchar(11),
+    NOME       varchar(60),
+    TELEFONE   varchar(10),
+
+    FK_COD_PROF INTEGER,
+    FOREIGN KEY (FK_COD_PROF) REFERENCES PROFISSAO (COD_PROF)
+);
+
+
+
+
+CREATE TABLE CLI_ENDERECO
+(
+    FK_COD_END int not null,
+    FK_CLI     int not null,
+    FOREIGN KEY (FK_COD_END) REFERENCES ENDERECO (COD_END), /* LIGA COD_END do ENDEREÇO */
+    FOREIGN KEY (FK_CLI) REFERENCES CLIENTE (COD_CLI) /* LIGA COM CLIENTE COD_CLI, não confundir com FK_COD_CLI */
+);
+
+
+
+CREATE TABLE DEPENDENTE
+(
+    FK_COD_CLI INTEGER NOT NULL,
+    FK_COD_DEP INTEGER NOT NULL,
+    PARENTESCO VARCHAR(20),
+    PRIMARY KEY (FK_COD_CLI, FK_COD_DEP), /* CHAVE PRIMARIA COMPOSTA, DESDE QUE A COMBINACAO NAO SE REPITA*/
+    FOREIGN KEY (FK_COD_CLI) REFERENCES CLIENTE (COD_CLI),
+    FOREIGN KEY (FK_COD_DEP) REFERENCES CLIENTE (COD_CLI)
+);
+
+
+CREATE TABLE LOCACAO
+(
+    COD_LOC    SERIAL PRIMARY KEY NOT NULL,
+    DATA_LOC   DATE,
+    DESCONTO   NUMERIC(15, 2),
+    MULTA      NUMERIC(15, 2),
+    SUB_TOTAL  NUMERIC(15, 2),
+
+    FK_COD_CLI INT                 NOT NULL,
+    FOREIGN KEY (FK_COD_CLI) REFERENCES CLIENTE (COD_CLI)
+);
+
+
+
+CREATE TABLE LOCACAO_FILME
+(
+    FK_COD_LOC   INTEGER  NOT NULL,
+    FK_COD_FILME INTEGER  NOT NULL,
+
+    VALOR        NUMERIC(15,2),
+    NUM_DIAS     INTEGER,
+    DATA_DEVOL   DATE,
+
+    PRIMARY KEY (FK_COD_LOC, FK_COD_FILME),
+    FOREIGN KEY (FK_COD_LOC) REFERENCES LOCACAO (COD_LOC),
+    FOREIGN KEY (FK_COD_FILME) REFERENCES FILMES (COD_FILMES)
+);
+
+
+
+CREATE TABLE FILMES
+(
+    COD_FILMES      SERIAL PRIMARY KEY,
+    TITULO_ORIGINAL VARCHAR(100),
+    TITULO          VARCHAR(100),
+    QUANTIDADE      INTEGER,
+
+    FK_COD_CAT      INTEGER,
+    FK_COD_GEN      INTEGER,
+
+    FOREIGN KEY (FK_COD_CAT) REFERENCES CATEGORIA (COD_CAT),
+    FOREIGN KEY (FK_COD_GEN) REFERENCES GENERO (COD_GEN)
+
+);
+
+
+
+CREATE TABLE CATEGORIA
+(
+    COD_CAT SERIAL PRIMARY KEY,
+    NOME    VARCHAR(60),
+    VALOR   NUMERIC(15,2)
+);
+
+
+
+CREATE TABLE GENERO
+(
+    COD_GEN SERIAL PRIMARY KEY,
+    NOME    VARCHAR(60)
+);
+
+
+
+CREATE TABLE ATOR
+(
+    COD_ATOR SERIAL PRIMARY KEY,
+    NOME     VARCHAR(60)
+);
+
+
+
+CREATE TABLE FILME_ATOR
+(
+    FK_COD_ATOR  INTEGER NOT NULL,
+    FK_COD_FILME INTEGER NOT NULL,
+
+
+    PRIMARY KEY (FK_COD_ATOR, FK_COD_FILME),
+    FOREIGN KEY (FK_COD_ATOR) REFERENCES ATOR (COD_ATOR),
+    FOREIGN KEY (FK_COD_FILME) REFERENCES FILMES (COD_FILMES),
+
+    ATOR         VARCHAR(20),
+    DIRETOR      VARCHAR(20)
+);
+
+
+SELECT * FROM LOCACAO;
+SELECT * FROM LOCACAO_FILME;
+SELECT * FROM FILMES;
+SELECT * FROM FILME_ATOR;
+SELECT * FROM ATOR;
+SELECT * FROM GENERO;
+SELECT * FROM CATEGORIA;
+SELECT * FROM CLIENTE;
+SELECT * FROM PROFISSAO;
+SELECT * FROM CLI_ENDERECO;
+SELECT * FROM ENDERECO;
+SELECT * FROM DEPENDENTE;
+
+
+
+
+INSERT INTO GENERO (nome) /*     FEITO */
+VALUES
+    ('Romance'),
+    ('Animação'),
+    ('Comédia'),
+    ('Aventura'),
+    ('Crime'),
+    ('Ficção Científica'),
+    ('Fantasia'),
+    ('Ação'),
+    ('Drama'),
+    ('Suspense');
+
+
+
+
+                  INSERT INTO ATOR (nome)  /*  FEITO  */
+
+VALUES
+    ('Leonardo DiCaprio'),
+    ('Kate Winslet'),
+    ('Billy Zane'),
+    ('Cate Blanchett'),
+    ('Richard Madden'),
+    ('Helena Bonham Carter'),
+    ('Mike Myers'),
+    ('Eddie Murphy'),
+    ('Cameron Diaz'),
+    ('Tom Hanks'),
+    ('Keanu Reeves'),
+    ('Carrie-Anne Moss'),
+    ('Daniel Radcliffe'),
+    ('Emma Watson'),
+    ('Rupert Grint');
+
+
+
+                  INSERT INTO CATEGORIA (nome, valor)  /*  FEITO   */
+VALUES
+    ('Romance', 10.00),
+    ('Animação', 22.70),
+    ('Comédia', 8.00),
+    ('Aventura', 13.00),
+    ('Crime', 8.60),
+    ('Ficção Científica', 34.10),
+    ('Fantasia', 10.00),
+    ('Ação', 19.00),
+    ('Drama', 33.00),
+    ('Suspense', 12.00);
+
+
+
+                  INSERT INTO FILMES (titulo_original, titulo, quantidade, fk_cod_cat, fk_cod_gen)
+VALUES
+    ('Titanic', 'Titanic', '10', 1, 8),
+    ('Cinderela', 'Cinderela', '8', 1, 7),
+    ('Shrek', 'Shrek', '12', 1, 2),
+    ('A Fantástica Fábrica de Chocolate', 'A Fantástica Fábrica de Chocolate', '5', 4, 8),
+    ('Pulp Fiction', 'Pulp Fiction', '7', 5, 10),
+    ('Matrix', 'Matrix', '9', 6, 9),
+    ('Harry Potter e a Pedra Filosofal', 'Harry Potter e a Pedra Filosofal', '11', 7, 8),
+    ('O Senhor dos Anéis: A Sociedade do Anel', 'O Senhor dos Anéis: A Sociedade do Anel', '6', 8, 4),
+    ('Forrest Gump', 'Forrest Gump', '8', 9, 8),
+    ('Interestelar', 'Interestelar', '10', 10, 6),
+    ('Toy Story', 'Toy Story', '6', 1, 2),
+    ('Jurassic Park', 'Jurassic Park', '7', 1, 4),
+    ('O Rei Leão', 'O Rei Leão', '9', 1, 1),
+    ('Os Vingadores', 'Os Vingadores', '12', 1, 9),
+    ('De Volta para o Futuro', 'De Volta para o Futuro', '8', 1, 6);
+
+
+
+                  INSERT INTO PROFISSAO (name)  /*    FEITO */
+VALUES
+    ('Engenheiro'),
+    ('Advogado'),
+    ('Professor'),
+    ('Médico');
+
+
+
+                  INSERT INTO CLIENTE (cpf,nome,telefone,FK_COD_PROF) /*    FEITO */
+VALUES
+    ( '1234567890', 'Maria Souza', '1197654321', 2),
+    ( '1234567890', 'João da Silva', '1198765432', 1),
+    ( '1234567890', 'Pedro Santos', '1196543217', 3),
+    ( '1234567890', 'Ana Oliveira', '1195432176', 1),
+    ( '1234567890', 'Carlos Martins', '1194321765', 2),
+    ( '1234567890', 'Juliana Costa', '1193217654', 3),
+    ( '1234567890', 'Marcos Lima', '1192176543', 1),
+    ( '1234567890', 'Luiza Pereira', '1191765432', 2),
+    ( '1234567890', 'Fernanda Rodrigues', '1197654321', 3),
+    ( '1234567890', 'Rafaela Almeida', '1196543217', 1);
+
+
+/* Nao tinha colocado o cpf na primeira vez que rodei a tabela, entao foi necessario fazer o ajuste*/
+UPDATE CLIENTE SET CPF = '1234567890' WHERE CLIENTE.COD_CLI <= 10;
+DELETE FROM CLIENTE WHERE COD_CLI >10;
+SELECT * FROM CLIENTE;
+
+
+
+                  INSERT INTO locacao (DATA_LOC, DESCONTO, MULTA, SUB_TOTAL, FK_COD_CLI) /*    FEITO */
+VALUES
+    ('2024-06-01', 0, 0, 50.00, 1),
+    ('2024-06-03', 5.00, 0, 45.00, 2),
+    ('2024-06-05', 0, 3.50, 55.00, 3),
+    ('2024-06-07', 0, 0, 60.00, 4),
+    ('2024-06-10', 0, 0, 40.00, 5),
+    ('2024-06-12', 2.00, 0, 48.00, 6),
+    ('2024-06-14', 0, 0, 70.00, 7),
+    ('2024-06-17', 0, 0, 35.00, 8),
+    ('2024-06-19', 0, 0, 42.00, 9),
+    ('2024-06-21', 0, 0, 65.00, 1),
+    ('2024-06-24', 0, 0, 38.00, 2),
+    ('2024-06-26', 1.50, 0, 47.00, 3),
+    ('2024-06-28', 0, 0, 58.00, 4),
+    ('2024-07-01', 0, 4.00, 52.00, 5),
+    ('2024-07-03', 0, 0, 44.00, 6),
+    ('2024-07-05', 3.00, 0, 57.00, 7),
+    ('2024-07-08', 0, 0, 62.00, 8),
+    ('2024-07-10', 0, 0, 36.00, 9),
+    ('2024-07-12', 0, 0, 49.00, 1),
+    ('2024-07-14', 0, 0, 68.00, 2);
+
+
+                  INSERT INTO DEPENDENTE (fk_cod_cli, fk_cod_dep, parentesco) /*    FEITO */
+VALUES
+    (1, 1, 'Filho'),
+    (2, 1, 'Filha'),
+    (3, 3, 'Esposa'),
+    (4, 5, 'Filho'),
+    (5, 6, 'Filha'),
+    (6, 7, 'Esposo'),
+    (7, 8, 'Filho'),
+    (8, 9, 'Filho'),
+    (9, 10, 'Esposa'),
+    (10, 10, 'Filho');
+
+
+
+                  INSERT INTO LOCACAO_FILME (FK_COD_LOC, FK_COD_FILME, VALOR, NUM_DIAS, DATA_DEVOL)
+VALUES
+    (1, 1, 10.00, 3, '2024-06-04'),
+    (2, 2, 8.00, 2, '2024-06-03'),
+    (3, 3, 12.00, 4, '2024-06-07'),
+    (4, 4, 5.00, 1, '2024-06-04'),
+    (5, 5, 7.00, 3, '2024-06-08'),
+    (6, 6, 9.00, 2, '2024-06-06'),
+    (7, 7, 11.00, 5, '2024-06-12'),
+    (8, 8, 6.00, 2, '2024-06-09'),
+    (9, 9, 8.00, 3, '2024-06-13'),
+    (10, 1, 10.00, 1, '2024-06-11'),
+    (11, 2, 6.00, 2, '2024-06-14'),
+    (12, 3, 7.00, 4, '2024-06-18'),
+    (13, 4, 9.00, 3, '2024-06-17'),
+    (14, 5, 12.00, 5, '2024-06-22'),
+    (15, 6, 5.00, 2, '2024-06-19'),
+    (16, 7, 8.00, 3, '2024-06-23'),
+    (17, 8, 7.00, 4, '2024-06-26'),
+    (18, 9, 10.00, 2, '2024-06-25'),
+    (19, 1, 6.00, 3, '2024-06-28'),
+    (20, 2, 9.00, 1, '2024-06-27');
+
+
+
+
+                  INSERT INTO FILME_ATOR (FK_COD_ATOR, FK_COD_FILME, ATOR, DIRETOR) /* FEITO */
+VALUES
+    (1, 1, 'S', 'N'),
+    (2, 2, 'N', 'N'),
+    (3, 3, 'N', 'N'),
+    (4, 4, 'S', 'N'),
+    (5, 5, 'N', 'N'),
+    (6, 6, 'N', 'N'),
+    (7, 7, 'S', 'N'),
+    (8, 8, 'N', 'N'),
+    (9, 9, 'N', 'N'),
+    (10, 10, 'S', 'N'),
+    (11, 11, 'S', 'N'),
+    (12, 12, 'S', 'N'),
+    (13, 13, 'S', 'N'),
+    (14, 14, 'S', 'N'),
+    (15, 15, 'S', 'N');
+
+
+
+                  INSERT INTO ENDERECO (cod_end, logradouro, tipo_log, complemento, cidade, uf, cep, numero, bairro) /* FEITO */
+VALUES
+    (1, 'Rua dos Bobos', 'Rua', 'Apto 101', 'São Paulo', 'SP', '01001000', '100', 'Centro'),
+    (2, 'Av. Paulista', 'Avenida', 'Sala 302', 'São Paulo', 'SP', '01310000', '500', 'Bela Vista'),
+    (3, 'Rua da Alegria', 'Rua', 'Casa 10', 'Rio de Janeiro', 'RJ', '20000000', '200', 'Copacabana'),
+    (4, 'Av. Atlântica', 'Avenida', 'Bloco A', 'Rio de Janeiro', 'RJ', '22000000', '1000', 'Ipanema'),
+    (5, 'Rua das Flores', 'Rua', 'Casa 5', 'Belo Horizonte', 'MG', '30100000', '50', 'Centro');
+
+
+
+                  INSERT INTO CLI_ENDERECO (FK_CLI, FK_COD_END)
+VALUES
+    (1, 1),
+    (2, 2),
+    (3, 3),
+    (4, 4),
+    (5, 5),
+    (1, 1),
+    (2, 2),
+    (3, 3),
+    (4, 4),
+    (5, 5);
+
+
+/*
+                                        Exercício lista 1-3:
+
+1) Enviar script da criação do banco/tabelas abaixo  : FEITO
+2) inserção de 15 filmes, 10 clientes FEITO
+3) 20 locações FEITO
+
+                                        Nova lista de exercício 1-16:
+
+
+1  - Listar todos os filmes alugados por um cliente específico, incluindo a data de locação e a data de devolução.
+2  - Obter uma lista de clientes e seus dependentes.
+3  - Listar todos os filmes de um determinado gênero.
+4  - Exibir todos os clientes que têm uma profissão específica.
+5  - Encontrar todos os filmes em uma categoria específica com quantidade disponível maior que 5.
+6  - Listar todos os atores que participaram de filmes com um determinado título.
+7  - Obter o endereço completo de um cliente específico.
+8  - Listar todos os filmes e seus respectivos gêneros e categorias.
+9  - Mostrar todos os clientes que alugaram um filme específico e a data de locação.
+10 - Exibir a lista de clientes com multas superiores a um valor específico.
+11 - Listar todas as locações feitas em um período específico.
+12 - Obter a quantidade total de filmes alugados por cada cliente. (DESAFIO)
+13 - Listar os clientes e os filmes que eles alugaram, ordenados por data de locação.
+14 - Mostrar todos os clientes que moram em uma cidade específica e que alugaram filmes de uma categoria específica.
+15 - Encontrar todos os atores que participaram de pelo menos 5 filmes, listando o nome do ator e o número de filmes em que atuou. (DESAFIO)
+16 - Exibir a quantidade total de filmes alugados por categoria e gênero, incluindo apenas as categorias e gêneros que têm mais de 5 filmes alugados no total (DESAFIO)
+
+*/
+
+
+/* Exercicio 1 de 16  1  - Listar todos os filmes alugados por um cliente específico, incluindo a data de locação e a data de devolução. */
+
+/* É feito um produto cartesiano quando voce usa o Join, e o que vai determinar o que vem depois da palabra "ON" */
+
+/*  Cliente, locação e locação filme. */
+
+
+select * from cliente where COD_CLI = 1;
+select * from locacao;
+select * from locacao_filme where FK_COD_LOC in (1,10,19) ;
+update locacao_filme set fk_cod_filme = 2 where FK_COD_LOC = 10 and  fk_cod_filme = 1;
+update locacao_filme set fk_cod_filme = 3 where fk_cod_loc = 10;
+select * from filmes;
+
+
+select cliente.nome, filmes.TITULO, LOCACAO.DATA_LOC, LOCACAO_FILME.DATA_DEVOL from cliente
+    inner join locacao on cliente.cod_cli = LOCACAO.FK_COD_CLI
+    inner join locacao_filme on locacao.COD_LOC = locacao_filme.FK_COD_LOC
+    inner join filmes on locacao_filme.FK_COD_FILME = filmes.COD_FILMES
+         where cod_cli = 1;
+
+
+
+/* 2  - Obter uma lista de clientes e seus dependentes. */
+
+select * from cliente;
+select * from dependente;
+
+update dependente set fk_cod_cli  = 1 where FK_COD_DEP = 10  and fk_cod_cli = 10;
+
+
+select cliente.nome as nome_cliente, cliente.cpf, cliente.TELEFONE, clientedep.NOME as nome_dep, clientedep.cpf, clientedep.TELEFONE, DEPENDENTE.PARENTESCO   from cliente
+    inner join dependente on dependente.FK_COD_CLI = cliente.COD_CLI
+    inner join cliente as clientedep on clientedep.COD_CLI = DEPENDENTE.FK_COD_DEP;
+
+    select*from DEPENDENTE where FK_COD_CLI=FK_COD_DEP; /* prova real*/
+
+
+
+/* 3  - Listar todos os filmes de um determinado gênero. */
+
+select * from filmes;
+select * from genero;
+
+select genero.nome as nome_genero,filmes.titulo, genero.cod_gen, filmes.fk_cod_gen from genero /* OS 2 ultimos parametros sao a prova real*/
+        inner join filmes on genero.cod_gen = filmes.fk_cod_gen
+where cod_gen =4;
+
+
+
+/* 4  - Exibir todos os clientes que têm uma profissão específica. */
+
+select * from cliente;
+select * from profissao;
+
+select profissao.name, cliente.nome  from profissao
+        inner join cliente on profissao.cod_prof = cliente.fk_cod_prof
+where cod_prof = 2;
+
+
+
+/* 5  - Encontrar todos os filmes em uma categoria específica com quantidade disponível maior que 5. */
+
+select * from categoria;
+select * from filmes;
+
+select  filmes.titulo ,categoria.nome, filmes.quantidade from categoria
+       inner join filmes on categoria.cod_cat = FK_COD_CAT
+       where quantidade >5;
+
+
+/* 6  - Listar todos os atores que participaram de filmes com um determinado título. */
+
+select * from ator; /* Ator sem chave estrangeira*/
+select * from filme_ator; /* fk_cod_ator, fk_cod_filme  */
+select * from filmes;   /* Titulo  */
+
+
+UPDATE filme_ator SET fk_cod_ator = 3 WHERE fk_cod_filme = 3; /* Não funcionou como esperado*/
+
+INSERT INTO filme_ator (fk_cod_ator, fk_cod_filme)   VALUES (16, 3)
+ON CONFLICT (fk_cod_ator, fk_cod_filme) DO UPDATE SET fk_cod_ator = EXCLUDED.fk_cod_ator; /* Foi necessario excluir e atualizar*/
+
+
+INSERT INTO ATOR (nome) VALUES ('Willzao'); /* Novo ator charam */
+
+
+select  ator.nome as nome_do_ator, filmes.TITULO  from filme_ator
+          inner join ator on FK_COD_ATOR = cod_ator
+          inner join filmes on FK_COD_FILME = cod_filmes
+where fk_cod_filme =3;
+
+
+
+/*  7  - Obter o endereço completo de um cliente específico. */
+
+select * from cliente;
+
+
+SELECT CLIENTE.NOME AS NOME_CLIENTE, ENDERECO.LOGRADOURO, ENDERECO.NUMERO, ENDERECO.COMPLEMENTO, ENDERECO.BAIRRO, ENDERECO.CIDADE, ENDERECO.UF, ENDERECO.CEP
+FROM CLIENTE
+         inner JOIN CLI_ENDERECO ce ON CLIENTE.COD_CLI = ce.FK_CLI
+         inner JOIN ENDERECO ON ce.FK_COD_END = ENDERECO.COD_END
+WHERE CLIENTE.COD_CLI = 3;
+
+
+ /* 8  - Listar todos os filmes e seus respectivos gêneros e categorias. */
+
+select * from FILMES;
+select * from GENERO;
+
+SELECT filmes.TITULO AS TITULO_DO_FILME, genero.NOME AS GENERO, genero.NOME AS CATEGORIA FROM FILMES filmes
+    JOIN GENERO genero ON filmes.FK_COD_GEN = genero.COD_GEN
+    JOIN CATEGORIA categoria ON filmes.FK_COD_CAT = categoria.COD_CAT;
+
+
+
+/* 9  - Mostrar todos os clientes que alugaram um filme específico e a data de locação. */
+
+
+select * from FILMES;
+
+SELECT DISTINCT cliente.NOME AS NOME_CLIENTE, locacao.DATA_LOC FROM CLIENTE cliente
+        JOIN LOCACAO locacao ON cliente.COD_CLI = locacao.FK_COD_CLI
+        JOIN LOCACAO_FILME  ON locacao.COD_LOC = LOCACAO_FILME.FK_COD_LOC
+        JOIN FILMES filmes ON LOCACAO_FILME.FK_COD_FILME = filmes.COD_FILMES
+        WHERE filmes.COD_FILMES in ( 5, 2); /* Mostrando 2 codigos de filmes em vez de um como apedido, achei mais divertido mostrar asism*/
+
+
+
+/* 10 - Exibir a lista de clientes com multas superiores a um valor específico. */
+
+
+select * from FILMES;
+select * from LOCACAO;
+
+SELECT cliente.NOME AS NOME_CLIENTE, SUM(locacao.MULTA) AS TOTAL_MULTA FROM CLIENTE cliente
+        JOIN LOCACAO locacao ON cliente.COD_CLI = locacao.FK_COD_CLI
+        GROUP BY cliente.COD_CLI, cliente.NOME
+        HAVING SUM(locacao.MULTA) > 2; /* Coloquei os valores de multa baixos, por isso ficou 2*/
+        /* Foi preciso usar o HAVING SUM para fazer esta parte, nao me lembro de ver isso em aula kkkkkk */
+
+
+
+/* 11 - Listar todas as locações feitas em um período específico. */
+
+
+select * from FILMES;
+select * from LOCACAO_FILME;
+
+SELECT cliente.NOME AS NOME_CLIENTE, filmes.TITULO AS TITULO_DO_FILME, locacao_filme.DATA_DEVOL , locacao.DATA_LOC FROM CLIENTE
+         JOIN LOCACAO locacao ON CLIENTE.COD_CLI = locacao.FK_COD_CLI
+         JOIN LOCACAO_FILME  ON locacao.COD_LOC = locacao_filme.FK_COD_LOC
+         JOIN FILMES filmes ON locacao_filme.FK_COD_FILME = filmes.COD_FILMES
+         WHERE locacao_filme.DATA_DEVOL BETWEEN '2024-01-01' AND '2024-06-30'; /* Where de onde, Between entre Condição para filtrar locações, todos do ano */
+
+
+
+/* 12 - Obter a quantidade total de filmes alugados por cada cliente. (DESAFIO) */   /* Opcional FEITO */
+
+
+
+SELECT CLIENTE.NOME AS NOME_CLIENTE, COUNT(LOCACAO_FILME.FK_COD_FILME) AS TOTAL_FILMES_ALUGADOS FROM CLIENTE
+         LEFT JOIN LOCACAO  ON CLIENTE.COD_CLI = locacao.FK_COD_CLI
+         LEFT JOIN LOCACAO_FILME  ON locacao.COD_LOC = LOCACAO_FILME.FK_COD_LOC
+         GROUP BY CLIENTE.COD_CLI, CLIENTE.NOME;
+
+        /* LEFT JOIN: para garantir que todos os clientes sejam incluídos na contagem, mesmo que não tenham locações registradas. */
+        /* Count nao me lembro de ver isso em aula kkkkk mas um google resolvou este caso " https://www.w3schools.com/postgresql/postgresql_count.php " */
+
+
+
+        /* 13 - Listar os clientes e os filmes que eles alugaram, ordenados por data de locação. */
+
+
+
+select * from LOCACAO_FILME;
+select * from FILMES;
+
+
+SELECT CLIENTE.NOME AS NOME_CLIENTE, FILMES.TITULO AS TITULO_DO_FILME, LOCACAO.DATA_LOC FROM CLIENTE
+         JOIN LOCACAO ON CLIENTE.COD_CLI = LOCACAO.FK_COD_CLI
+         JOIN LOCACAO_FILME  ON LOCACAO.COD_LOC = LOCACAO_FILME.FK_COD_LOC
+         JOIN FILMES  ON LOCACAO_FILME.FK_COD_FILME = FILMES.COD_FILMES
+         ORDER BY LOCACAO_FILME.DATA_DEVOL;
+
+
+    /* 14 - Mostrar todos os clientes que moram em uma cidade específica e que alugaram filmes de uma categoria específica. */
+
+
+select * from endereco;
+
+
+SELECT DISTINCT CLIENTE.NOME AS NOME_CLIENTE, ENDERECO.CIDADE, FILMES.TITULO, CATEGORIA.NOME as nome_categoria  FROM CLIENTE
+         JOIN ENDERECO  ON CLIENTE.COD_CLI = ENDERECO.COD_END
+         JOIN LOCACAO  ON CLIENTE.COD_CLI = LOCACAO.FK_COD_CLI
+         JOIN LOCACAO_FILME ON LOCACAO.COD_LOC = LOCACAO_FILME.FK_COD_LOC
+         JOIN FILMES  ON LOCACAO_FILME.FK_COD_FILME = FILMES.COD_FILMES
+         JOIN CATEGORIA  ON FILMES.FK_COD_CAT = CATEGORIA.COD_CAT
+         WHERE ENDERECO.CIDADE  in  ('Rio de Janeiro', 'São Paulo') AND CATEGORIA.COD_CAT = 1;
+
+
+                                                        /* Opcionais */
+
+/* 15 - Encontrar todos os atores que participaram de pelo menos 5 filmes, listando o nome do ator e o número de filmes em que atuou. (DESAFIO) */
+
+/* 16 - Exibir a quantidade total de filmes alugados por categoria e gênero, incluindo apenas as categorias e gêneros que têm mais de 5 filmes alugados no total (DESAFIO) */
+
